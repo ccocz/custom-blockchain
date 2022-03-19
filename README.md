@@ -1,2 +1,2 @@
-# Custom blockchain
+# Effortless custom blockchain
 WIP
