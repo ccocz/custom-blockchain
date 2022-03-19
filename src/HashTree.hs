@@ -7,16 +7,16 @@ module HashTree where
 
 import Hashable32
 
-data Tree a = Node Hash (Tree a) (Tree a) | Empty
+data Tree a = Node Hash a (Tree a) (Tree a) | Empty
 
 leaf :: Hashable a => a -> Tree a
-leaf x = Node (hash x) Empty Empty
+leaf x = Node (hash x) x Empty Empty
 
 twig :: Hashable a => Tree a -> Tree a
-twig l@(Node x y z) = Node (hash (x, x)) l Empty
+twig l@(Node x _ _ _) = Node (hash (x, x)) undefined l Empty
 
 node :: Hashable a => Tree a -> Tree a -> Tree a
-node l@(Node x y z) r@(Node a b c) = Node (hash (x, a)) l r
+node l@(Node x _ _ _) r@(Node a _ _ _) = Node (hash (x, a)) undefined l r
 
 buildTree :: Hashable a => [a] -> Tree a
 buildTree x = buildTreeLift $ buildLeaves x
@@ -40,13 +40,13 @@ drawTree x = drawTreePretty x 0
 
 drawTreePretty :: Show a => Tree a -> Int -> String
 drawTreePretty Empty _ = ""
-drawTreePretty (Node x Empty Empty) t = rep t ++ showHash x ++ "\n"
-drawTreePretty (Node x y Empty) t = rep t ++ showHash x ++ " +\n" ++ drawTreePretty y (t + 1)
-drawTreePretty (Node x Empty z) t = rep t ++ showHash x ++ " +\n" ++ drawTreePretty z (t + 1)
-drawTreePretty (Node x y z) t = rep t ++ showHash x ++ " -\n" ++ drawTreePretty y (t + 1) ++ drawTreePretty z (t + 1)
+drawTreePretty (Node x y Empty Empty) t = rep t ++ showHash x ++ " " ++ show y ++ "\n"
+drawTreePretty (Node x _ y Empty) t = rep t ++ showHash x ++ " +\n" ++ drawTreePretty y (t + 1)
+drawTreePretty (Node x _ Empty z) t = rep t ++ showHash x ++ " +\n" ++ drawTreePretty z (t + 1)
+drawTreePretty (Node x _ y z) t = rep t ++ showHash x ++ " -\n" ++ drawTreePretty y (t + 1) ++ drawTreePretty z (t + 1)
 
 rep t = replicate t '\t'
 
 treeHash :: Tree a -> Hash
 treeHash Empty = 0
-treeHash (Node x y z) = x
+treeHash (Node x _ _ _) = x
