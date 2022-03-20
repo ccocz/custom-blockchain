@@ -7,6 +7,7 @@
    2) which nonce to choose
    3) when there's no right child what should be the hash
    4) simplifying methods with helper functions
+   5) reducing _ _ _
 -}
 
 module HashTree where
@@ -65,13 +66,13 @@ data MerkleProof a = MerkleProof a MerklePath
 instance Show a => Show (MerkleProof a) where
    show (MerkleProof x y) = "(MerkleProof " ++ show x ++ " " ++ showMerklePath y ++ ")"
 
-merklePaths :: (Hashable a, Eq a) => a -> Tree a -> [MerklePath]
+merklePaths :: Hashable a => a -> Tree a -> [MerklePath]
 merklePaths x y = getMerklePaths x y []
 
-getMerklePaths :: (Hashable a, Eq a) => a -> Tree a -> MerklePath -> [MerklePath]
+getMerklePaths :: Hashable a => a -> Tree a -> MerklePath -> [MerklePath]
 getMerklePaths _ Empty _ = []
-getMerklePaths x (Node _ y Empty Empty) p
-  | x == y = [p]
+getMerklePaths x (Node y _ Empty Empty) p
+  | hash x == y = [p]
   | otherwise = []
 getMerklePaths x (Node _ _ l@(Node h1 _ _ _) Empty) p = getMerklePaths x l (p ++ [Left h1])
 getMerklePaths x (Node _ _ Empty r@(Node h2 _ _ _)) p = getMerklePaths x r (p ++ [Right h2])
@@ -83,7 +84,7 @@ showMerklePath [] = ""
 showMerklePath (Left x : xs) = "<" ++ showHash x ++ showMerklePath xs
 showMerklePath (Right x : xs) = ">" ++ showHash x ++ showMerklePath xs
 
-buildProof :: (Hashable a, Eq a) => a -> Tree a -> Maybe (MerkleProof a)
+buildProof :: Hashable a => a -> Tree a -> Maybe (MerkleProof a)
 buildProof _ Empty = Nothing
 buildProof x y
   | isJust $ maybeHead $ paths = Just $ MerkleProof x (head paths)
