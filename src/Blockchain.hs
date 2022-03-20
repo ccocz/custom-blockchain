@@ -56,7 +56,20 @@ type Miner = Address
 type Nonce = Word32
 
 mineBlock :: Miner -> Hash -> [Transaction] -> Block
-mineBlock miner parent txs = undefined
+mineBlock miner parent txs = mineBlockWithNonce miner parent txs 0
+
+mineBlockWithNonce :: Miner -> Hash -> [Transaction] -> Word32 -> Block
+
+mineBlockWithNonce miner parent txs nonce
+  | validNonce bh = Block {blockHdr = bh, blockTxs = txs}
+  | otherwise = mineBlockWithNonce miner parent txs (nonce + 1) where
+  bh = BlockHeader {
+    parent = parent,
+    coinbase = cb,
+    txroot = treeHash $ buildTree $ cb : txs,
+    nonce = nonce
+  } where
+    cb = coinbaseTx miner
 
 genesis = block0
 block0 = mineBlock (hash "Satoshi") 0 []
@@ -72,10 +85,20 @@ chain = [block2, block1, block0]
 -- Just 0x0dbea380
 
 validChain :: [Block] -> Bool
-validChain = undefined
+validChain x
+  | isJust $ verifyChain x = True
+  | otherwise = False
 
 verifyChain :: [Block] -> Maybe Hash
-verifyChain = undefined
+verifyChain [] = Just 0
+verifyChain x = verifyChainInter $ reverse x
+
+verifyChainInter :: [Block] -> Maybe Hash
+verifyChainInter (x@(Block h t) : xs) = verifyChainBack (x : xs) (parent h)
+
+verifyChainBack :: [Block] -> Hash -> Maybe Hash
+verifyChainBack [p@(Block h t)] x = maybeBool (x == parent h) (hash p)
+verifyChainBack (x : xs) _ = verifyChainBack xs (hash x)
 
 verifyBlock :: Block -> Hash -> Maybe Hash
 verifyBlock b@(Block hdr txs) parentHash = do

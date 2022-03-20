@@ -1,6 +1,12 @@
 {-
   Merkle Tree implementation
   @author Resul Hangeldiyev (rh402185)
+
+  todo/doubts:
+   1) able to access specific member, e.g., x coordinate
+   2) which nonce to choose
+   3) when there's no right child what should be the hash
+   4) simplifying methods with helper functions
 -}
 
 module HashTree where
@@ -20,6 +26,7 @@ node :: Hashable a => Tree a -> Tree a -> Tree a
 node l@(Node x _ _ _) r@(Node a _ _ _) = Node (hash (x, a)) undefined l r
 
 buildTree :: Hashable a => [a] -> Tree a
+buildTree [] = Empty
 buildTree x = buildTreeLift $ buildLeaves x
 
 buildLeaves :: Hashable a => [a] -> [Tree a]
