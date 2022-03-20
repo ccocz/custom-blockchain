@@ -6,6 +6,7 @@
 module HashTree where
 
 import Hashable32
+import Utils
 
 data Tree a = Node Hash a (Tree a) (Tree a) | Empty
 
@@ -50,3 +51,39 @@ rep t = replicate t '\t'
 treeHash :: Tree a -> Hash
 treeHash Empty = 0
 treeHash (Node x _ _ _) = x
+
+type MerklePath = [Either Hash Hash]
+data MerkleProof a = MerkleProof a MerklePath
+
+instance Show a => Show (MerkleProof a) where
+   show (MerkleProof x y) = "(MerkleProof " ++ show x ++ " " ++ showMerklePath y ++ ")"
+
+merklePaths :: (Hashable a, Eq a) => a -> Tree a -> [MerklePath]
+merklePaths x y = getMerklePaths x y []
+
+getMerklePaths :: (Hashable a, Eq a) => a -> Tree a -> MerklePath -> [MerklePath]
+getMerklePaths _ Empty _ = []
+getMerklePaths x (Node _ y Empty Empty) p
+  | x == y = [p]
+  | otherwise = []
+getMerklePaths x (Node _ _ l@(Node h1 _ _ _) Empty) p = getMerklePaths x l (p ++ [Left h1])
+getMerklePaths x (Node _ _ Empty r@(Node h2 _ _ _)) p = getMerklePaths x r (p ++ [Right h2])
+getMerklePaths x (Node _ _ l@(Node h1 _ _ _) r@(Node h2 _ _ _)) p =
+  getMerklePaths x l (p ++ [Left h2]) ++ getMerklePaths x r (p ++ [Right h1])
+
+showMerklePath :: MerklePath -> String
+showMerklePath [] = ""
+showMerklePath (Left x : xs) = "<" ++ showHash x ++ showMerklePath xs
+showMerklePath (Right x : xs) = ">" ++ showHash x ++ showMerklePath xs
+
+buildProof :: (Hashable a, Eq a) => a -> Tree a -> Maybe (MerkleProof a)
+buildProof _ Empty = Nothing
+buildProof x y
+  | isJust $ maybeHead $ paths = Just $ MerkleProof x (head paths)
+  | otherwise = Nothing
+  where paths = merklePaths x y
+
+verifyProof :: Hashable a => Hash -> MerkleProof a -> Bool
+verifyProof x (MerkleProof a p) = x == foldr (\i j -> getHash i j) (hash a) p where
+  getHash (Left v) j = hash(j, v)
+  getHash (Right v) j = hash(v, j)
