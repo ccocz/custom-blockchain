@@ -46,7 +46,7 @@ drawTreePretty (Node x _ y Empty) t = rep t ++ showHash x ++ " +\n" ++ drawTreeP
 drawTreePretty (Node x _ Empty z) t = rep t ++ showHash x ++ " +\n" ++ drawTreePretty z (t + 1)
 drawTreePretty (Node x _ y z) t = rep t ++ showHash x ++ " -\n" ++ drawTreePretty y (t + 1) ++ drawTreePretty z (t + 1)
 
-rep t = replicate t '\t'
+rep t = replicate (2 * t) ' '
 
 treeHash :: Tree a -> Hash
 treeHash Empty = 0
