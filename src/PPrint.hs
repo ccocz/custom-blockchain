@@ -9,17 +9,24 @@ writeln :: String -> IO ()
 writeln = putStrLn
 
 showsPair :: Show a => (String, a) -> ShowS
-showsPair (k,v) = undefined
+showsPair (k,v)
+  = showString k
+  . showString ": "
+  . shows v
 
 pprH, pprV :: [ShowS] -> ShowS
-pprV = intercalateS undefined
-pprH = intercalateS undefined
+pprV l = intercalateS (showChar '\n') l
+pprH l = intercalateS (showChar ' ') l
 
 intercalateS :: ShowS -> [ShowS] -> ShowS
-intercalateS sep list = undefined
+intercalateS _ [] = showString ""
+intercalateS _ [x] = x
+intercalateS sep (x : xs) = x . sep . intercalateS sep xs
 
 pprListWith :: (a -> ShowS) -> [a] -> ShowS
-pprListWith = undefined
+pprListWith _ [] = showString ""
+pprListWith f [x] = f x
+pprListWith f (x : xs) = f x . showChar '\n' . pprListWith f xs
 
 runShows :: ShowS -> IO ()
 runShows = putStrLn . ($"")

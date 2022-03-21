@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 {-
   Merkle Tree implementation
   @author Resul Hangeldiyev (rh402185)
@@ -6,8 +8,10 @@
    1) able to access specific member, e.g., x coordinate
    2) which nonce to choose
    3) when there's no right child what should be the hash
-   4) simplifying methods with helper functions
+   4) simplifying methods with helper functions (preferably go within where)
    5) reducing _ _ _
+   6) avoid appending to list (like lab7's reverse)
+   7) change to showS concat
 -}
 
 module HashTree where
@@ -64,7 +68,11 @@ type MerklePath = [Either Hash Hash]
 data MerkleProof a = MerkleProof a MerklePath
 
 instance Show a => Show (MerkleProof a) where
-   show (MerkleProof x y) = "(MerkleProof " ++ show x ++ " " ++ showMerklePath y ++ ")"
+   showsPrec d (MerkleProof x y) = showParen (d > 10) $
+      showString "MerkleProof "
+      . showsPrec 11 x
+      . showChar ' '
+      . showString (showMerklePath y)
 
 merklePaths :: Hashable a => a -> Tree a -> [MerklePath]
 merklePaths x y = getMerklePaths x y []

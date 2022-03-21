@@ -1,6 +1,9 @@
 {-
   Blockchain implementation
   @author Resul Hangeldiyev (rh402185)
+
+  todo/doubts:
+  1) verifyChain [block2, block1]
 -}
 
 module Blockchain where
