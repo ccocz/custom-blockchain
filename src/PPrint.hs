@@ -1,3 +1,8 @@
+{-
+  Blockchain implementation
+  @author Resul Hangeldiyev (rh402185)
+-}
+
 module PPrint where
 
 writeln :: String -> IO ()

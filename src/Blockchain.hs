@@ -1,3 +1,8 @@
+{-
+  Blockchain implementation
+  @author Resul Hangeldiyev (rh402185)
+-}
+
 module Blockchain where
 import Control.Monad
 import Data.Word
@@ -59,7 +64,6 @@ mineBlock :: Miner -> Hash -> [Transaction] -> Block
 mineBlock miner parent txs = mineBlockWithNonce miner parent txs 0
 
 mineBlockWithNonce :: Miner -> Hash -> [Transaction] -> Word32 -> Block
-
 mineBlockWithNonce miner parent txs nonce
   | validNonce bh = Block {blockHdr = bh, blockTxs = txs}
   | otherwise = mineBlockWithNonce miner parent txs (nonce + 1) where
@@ -146,7 +150,15 @@ validateReceipt r hdr = txrBlock r == hash hdr
                         && verifyProof (txroot hdr) (txrProof r)
 
 mineTransactions :: Miner -> Hash -> [Transaction] -> (Block, [TransactionReceipt])
-mineTransactions miner parent txs = undefined
+mineTransactions miner parent txs = (block, receipts) where
+  block = mineBlock miner parent txs
+  receipts = collectReceipts (buildTree $ coinbaseTx miner : txs) txs (hash $ blockHdr block)
+
+collectReceipts :: Tree Transaction -> [Transaction] -> Hash -> [TransactionReceipt]
+collectReceipts _ [] _ = []
+collectReceipts Empty _ _ = []
+collectReceipts t (x : xs) h = receipt : collectReceipts t xs h where
+  receipt = TxReceipt {txrBlock = h, txrProof = fromMaybe undefined (buildProof x t)}
 
 {- | Pretty printing
 >>> runShows $ pprBlock block2
