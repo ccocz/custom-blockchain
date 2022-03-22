@@ -32,33 +32,30 @@ node l@(Node x _ _ _) r@(Node a _ _ _) = Node (hash (x, a)) undefined l r
 
 buildTree :: Hashable a => [a] -> Tree a
 buildTree [] = Empty
-buildTree x = buildTreeLift $ buildLeaves x
+buildTree x = buildTreeLift $ buildLeaves x where
+  buildLeaves :: Hashable a => [a] -> [Tree a]
+  buildLeaves [] = []
+  buildLeaves (x : xs) = leaf x : buildLeaves xs
 
-buildLeaves :: Hashable a => [a] -> [Tree a]
-buildLeaves [] = []
-buildLeaves (x : xs) = leaf x : buildLeaves xs
-
-buildTreeLift :: Hashable a => [Tree a] -> Tree a
-buildTreeLift x
-  | length x == 1 = x !! 0
-  | otherwise = buildTreeLift $ mergeNodes x
-
-mergeNodes :: Hashable a => [Tree a] -> [Tree a]
-mergeNodes [] = []
-mergeNodes [x] = [twig x]
-mergeNodes (x : xs : xz) = (node x xs) : mergeNodes xz
-
-drawTree :: Show a => Tree a -> String
-drawTree x = drawTreePretty x 0
-
-drawTreePretty :: Show a => Tree a -> Int -> String
-drawTreePretty Empty _ = ""
-drawTreePretty (Node x y Empty Empty) t = rep t ++ showHash x ++ " " ++ show y ++ "\n"
-drawTreePretty (Node x _ y Empty) t = rep t ++ showHash x ++ " +\n" ++ drawTreePretty y (t + 1)
-drawTreePretty (Node x _ Empty z) t = rep t ++ showHash x ++ " +\n" ++ drawTreePretty z (t + 1)
-drawTreePretty (Node x _ y z) t = rep t ++ showHash x ++ " -\n" ++ drawTreePretty y (t + 1) ++ drawTreePretty z (t + 1)
+  buildTreeLift :: Hashable a => [Tree a] -> Tree a
+  buildTreeLift x
+    | length x == 1 = x !! 0
+    | otherwise = buildTreeLift $ mergeNodes x where
+      mergeNodes :: Hashable a => [Tree a] -> [Tree a]
+      mergeNodes [] = []
+      mergeNodes [x] = [twig x]
+      mergeNodes (x : xs : xz) = (node x xs) : mergeNodes xz
 
 rep t = replicate (2 * t) ' '
+
+drawTree :: Show a => Tree a -> String
+drawTree x = go x 0 where
+  go :: Show a => Tree a -> Int -> String
+  go Empty _ = ""
+  go (Node x y Empty Empty) t = rep t ++ showHash x ++ " " ++ show y ++ "\n"
+  go (Node x _ y Empty) t = rep t ++ showHash x ++ " +\n" ++ go y (t + 1)
+  go (Node x _ Empty z) t = rep t ++ showHash x ++ " +\n" ++ go z (t + 1)
+  go (Node x _ y z) t = rep t ++ showHash x ++ " -\n" ++ go y (t + 1) ++ go z (t + 1)
 
 treeHash :: Tree a -> Hash
 treeHash Empty = 0
@@ -75,17 +72,16 @@ instance Show a => Show (MerkleProof a) where
       . showString (showMerklePath y)
 
 merklePaths :: Hashable a => a -> Tree a -> [MerklePath]
-merklePaths x y = getMerklePaths x y []
-
-getMerklePaths :: Hashable a => a -> Tree a -> MerklePath -> [MerklePath]
-getMerklePaths _ Empty _ = []
-getMerklePaths x (Node y _ Empty Empty) p
-  | hash x == y = [p]
-  | otherwise = []
-getMerklePaths x (Node _ _ l@(Node h1 _ _ _) Empty) p = getMerklePaths x l (p ++ [Left h1])
-getMerklePaths x (Node _ _ Empty r@(Node h2 _ _ _)) p = getMerklePaths x r (p ++ [Right h2])
-getMerklePaths x (Node _ _ l@(Node h1 _ _ _) r@(Node h2 _ _ _)) p =
-  getMerklePaths x l (p ++ [Left h2]) ++ getMerklePaths x r (p ++ [Right h1])
+merklePaths x y = go x y [] where
+  go :: Hashable a => a -> Tree a -> MerklePath -> [MerklePath]
+  go _ Empty _ = []
+  go x (Node y _ Empty Empty) p
+    | hash x == y = [reverse p]
+    | otherwise = []
+  go x (Node _ _ l@(Node h1 _ _ _) Empty) p = go x l (Left h1 : p)
+  go x (Node _ _ Empty r@(Node h2 _ _ _)) p = go x r (Right h2 : p)
+  go x (Node _ _ l@(Node h1 _ _ _) r@(Node h2 _ _ _)) p =
+    go x l (Left h2 : p) ++ go x r (Right h1 : p)
 
 showMerklePath :: MerklePath -> String
 showMerklePath [] = ""
