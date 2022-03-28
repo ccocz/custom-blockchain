@@ -47,7 +47,7 @@ data BlockHeader = BlockHeader {
 }
 ```
 
-where `nonce` is proof of work - value such that the header bash meets a given condition.
+where `nonce` is proof of work - value such that the header hash meets a given condition.
 
 ## Tests
 Inline tests beginning with `>>>` sequence are placed in modules and can be tested with `doctest`, e.g.,
