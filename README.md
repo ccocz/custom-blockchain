@@ -15,7 +15,7 @@ e.g.,
     0x00000065 'e'
 ```
 
-# Proofs
+## Proofs
 Proof that an element belongs to a tree with a specific root is defined as the path (from the root to the leaf), 
 each element of which contains information which descendant contains the element of interest
 and the hash of the second descendant.
@@ -24,7 +24,7 @@ and the hash of the second descendant.
 Just (MerkleProof 'o' <0x6c00aa70>0x00000073)
 ```
 
-# Blockchain
+## Blockchain
 Blockchain is simplified and based on "Proof of Work" scheme.
 ```haskell
 mineBlock :: Miner -> Hash -> [Transaction] -> Block
