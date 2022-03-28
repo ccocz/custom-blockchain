@@ -18,7 +18,3 @@ fromMaybe def = maybe def id
 maybeHead :: [a] -> Maybe a
 maybeHead (x:_) = Just x
 maybeHead _ = Nothing
-
-maybeBool :: Bool -> a -> Maybe a
-maybeBool True a = Just a
-maybeBool False _ = Nothing

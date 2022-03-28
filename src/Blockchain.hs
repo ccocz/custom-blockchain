@@ -1,9 +1,6 @@
 {-
   Blockchain implementation
-  @author Resul Hangeldiyev (rh402185)
-
-  todo/doubts:
-  1) verifyChain [block2, block1]
+  @author Resul Hangeldiyev
 -}
 
 module Blockchain where
@@ -111,6 +108,9 @@ verifyBlock b@(Block hdr txs) parentHash = do
   guard (validNonce hdr)
   return (hash b)
 
+maybeBool :: Bool -> a -> Maybe a
+maybeBool True a = Just a
+maybeBool False _ = Nothing
 
 {- | Transaction Receipts
 NB the following will not work in VS Code, see below

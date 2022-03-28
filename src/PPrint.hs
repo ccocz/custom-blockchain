@@ -1,6 +1,6 @@
 {-
-  Blockchain implementation
-  @author Resul Hangeldiyev (rh402185)
+  PPrint implementation
+  @author Resul Hangeldiyev
 -}
 
 module PPrint where
